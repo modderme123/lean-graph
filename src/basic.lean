@@ -1,5 +1,4 @@
 import tactic
-import data.nat.basic
 
 structure graph := (V : ℕ)
   (E : ℕ → ℕ → bool)
@@ -11,13 +10,8 @@ def K (n: ℕ): graph := begin
     V := n, 
     E := (λ x, λ y, x ≠ y),
   }),
-  intros,
-  intro z,
-  simp at z,
-  tauto,
-  intros x h l,
   simp,
-  intro x,
+  intros,
   cc,
 end
 
@@ -26,44 +20,41 @@ def Path (n: ℕ): graph := begin
     V := n, 
     E := (λ x, λ y, nat.succ x = y ∨ x = nat.succ y),
   }),
-  intros,
-  simp,
-  intro j,
-  have x := nat.succ_ne_self x,
-  cc,
   simp,
   intros,
-  have x := nat.succ_ne_self x,
-  cc,
+  omega,
+  simp,
+  tauto,
 end
 
 def Empty (n: ℕ): graph := begin
   refine_struct ({
     V := n, 
     E := (λ x, λ y, false),
-  }),tauto,tauto,
+  }),
+  tauto,
+  tauto,
 end
 
-def summer : (nat → nat) -> nat → nat
+def sum_fun : (nat → nat) -> nat → nat
 | m 0 := 0
-| m (nat.succ n) := m(n) + summer(m)(n)
+| m (nat.succ n) := m(n) + sum_fun(m)(n)
 
 def edges (G : graph) : nat := begin
-  have sum := fun x, (summer (fun y, if G.E(x)(y) then 1 else 0) x),
-  exact summer (sum) (G.V)
+  have sum := λ x, (sum_fun (λ y, if G.E x y then 1 else 0) x),
+  exact sum_fun (sum) (G.V)
 end
 
 def degree (G : graph) (x : nat) : nat := begin
   have check_edge := λ y, if G.E x y then 1 else 0,
-  exact if x<G.V then summer check_edge (G.V) else 0
+  exact if x < G.V then sum_fun check_edge (G.V) else 0
 end
 
-def x := K(4)
-#eval edges(x)
-#eval degree(x)(0)
-
-theorem sum_degrees (G : graph) : summer (degree G) (G.V) = 2 * (edges G) :=
+theorem sum_degrees (G : graph) : sum_fun (degree G) (G.V) = 2 * (edges G) :=
 begin
-
   sorry
 end
+
+def x := K(10)
+#eval 2 * edges(x)
+#eval sum_fun (degree x) (x.V)

@@ -36,23 +36,37 @@ def Empty (n: ℕ): graph := begin
   tauto,
 end
 
-def sum_fun : (nat → nat) -> nat → nat
+def sum_fun : (ℕ → ℕ) -> ℕ → ℕ
 | m 0 := 0
-| m (nat.succ n) := m(n) + sum_fun(m)(n)
+| m (n + 1) := m n + sum_fun m n
 
-def edges (G : graph) : nat := begin
-  have sum := λ x, (sum_fun (λ y, if G.E x y then 1 else 0) x),
-  exact sum_fun (sum) (G.V)
+def edges (G : graph) : ℕ :=
+let sum := λ x, sum_fun (λ y, if G.E x y then 1 else 0) x
+in sum_fun sum G.V
+
+def degree (G : graph) (x : ℕ) : ℕ :=
+let check_edge := λ y, if G.E x y then 1 else 0
+in sum_fun check_edge G.V
+
+def darts (G : graph) : ℕ :=
+let sum := λ x, sum_fun (λ y, if G.E x y then 1 else 0) G.V
+in sum_fun sum G.V
+
+lemma darts_eq_twice_edges (G : graph) : darts G = 2 * edges G :=
+begin
+  dsimp only [darts, edges],
+  sorry,
 end
 
-def degree (G : graph) (x : nat) : nat := begin
-  have check_edge := λ y, if G.E x y then 1 else 0,
-  exact if x < G.V then sum_fun check_edge (G.V) else 0
-end
-
-theorem sum_degrees (G : graph) : sum_fun (degree G) (G.V) = 2 * (edges G) :=
+lemma darts_eq_sum_degrees (G : graph) : darts G = sum_fun (degree G) G.V :=
 begin
   sorry
+end
+
+theorem sum_degrees (G : graph) : sum_fun (degree G) G.V = 2 * edges G :=
+begin
+  rw ←darts_eq_sum_degrees,
+  rw ←darts_eq_twice_edges,
 end
 
 def x := K(10)
